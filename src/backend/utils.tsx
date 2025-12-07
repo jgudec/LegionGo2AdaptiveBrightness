@@ -120,7 +120,7 @@ export const logInfo = (info: any) => {
 
 export const getLatestVersionNum = async (serverApi: ServerAPI) => {
   const { result } = await serverApi.fetchNoCors(
-    'https://raw.githubusercontent.com/aarron-lee/LegionGoRemapper/main/package.json',
+    'https://raw.githubusercontent.com/aarron-lee/LegionGo2AdaptiveBrightness/main/package.json',
     { method: 'GET' }
   );
 

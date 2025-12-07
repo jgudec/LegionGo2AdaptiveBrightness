@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 
 # The decky plugin module is located at decky-loader/plugin
@@ -10,7 +11,6 @@ import ambient_light_sensor
 import legion_configurator
 import legion_space
 import controller_enums
-import rgb
 import controllers
 import file_timeout
 import plugin_update
@@ -18,7 +18,7 @@ import controller_settings as settings
 from time import sleep
 
 try:
-    LOG_LOCATION = f"/tmp/legionGoRemapper.log"
+    LOG_LOCATION = f"/tmp/LegionGo2AdaptiveBrightness.log"
     logging.basicConfig(
         level = logging.INFO,
         filename = LOG_LOCATION,
@@ -28,6 +28,22 @@ try:
 except Exception as e:
     logging.error(f"exception|{e}")
 
+PLUGIN_ROOT = os.path.dirname(__file__)
+BRIGHTNESS_MAP_FILE = os.path.join(PLUGIN_ROOT, "brightness_thresholds.json")
+
+def load_brightness_thresholds():
+    try:
+        with open(BRIGHTNESS_MAP_FILE, "r") as f:
+            thresholds = json.load(f)
+            if isinstance(thresholds, list):
+                return thresholds
+    except Exception as e:
+        print(f"[AdaptiveBrightness] Error loading mapping: {e}")
+    return [[0, 10], [1899, 100]]  # fallback
+
+# Load once at startup
+BRIGHTNESS_THRESHOLDS = load_brightness_thresholds()
+
 class Plugin:
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
@@ -36,20 +52,28 @@ class Plugin:
     async def get_settings(self):
         results = settings.get_settings()
 
-        if results.get("chargeLimitEnabled", False):
-            legion_space.set_charge_limit(True)
-
         try:
             results['pluginVersionNum'] = f'{decky_plugin.DECKY_PLUGIN_VERSION}'
-
-            if settings.supports_custom_fan_curves():
-                results['supportsCustomFanCurves'] = True
-            else:
-                results['supportsCustomFanCurves'] = False
         except Exception as e:
             decky_plugin.logger.error(e)
 
         return results
+
+    async def get_brightness_map(self):
+        return load_brightness_thresholds()
+
+    async def save_brightness_map(self, new_map):
+        # Validate the new_map!
+        try:
+            # Ensure it's a list of [int, int] pairs
+            parsed = [[int(k), int(v)] for k, v in new_map]
+            with open(BRIGHTNESS_MAP_FILE, "w") as f:
+                json.dump(parsed, f, indent=2)
+            print(f"Saved successfully!")
+            return {"success": True}
+        except Exception as e:
+            print(f"Error saving brightness map: {e}")
+            return {"success": False, "error": str(e)}
 
     async def find_als(self):
         return ambient_light_sensor.find_als()
@@ -58,8 +82,7 @@ class Plugin:
         # decky_plugin.logger.info('read als called')
         return ambient_light_sensor.read_als()
 
-    async def save_rgb_per_game_profiles_enabled(self, enabled: bool):
-        return settings.set_setting('rgbPerGameProfilesEnabled', enabled)
+    
 
     async def save_controller_settings(self, controller, currentGameId):
         controllerProfiles = controller.get('controllerProfiles')
@@ -82,83 +105,11 @@ class Plugin:
                     controllers.sync_gyros(currentGameId)
         return result
 
-    async def save_rgb_settings(self, payload):
-        currentGameId = payload.get('currentGameId')
-        rgbProfiles = payload.get('rgbProfiles')
-        enableRgbControl = payload.get('enableRgbControl', True)
-        result = settings.set_all_rgb_profiles(rgbProfiles)
-
-        settings.set_setting('enableRgbControl', enableRgbControl)
-
-        if enableRgbControl:
-            # double-sync just in case the first one doesn't register
-            for _ in range(2):
-                if currentGameId:
-                    rgb.sync_rgb_settings(currentGameId)
-        return result
-
-    async def disable_fan_profiles(self, resetCurve = False):
-        settings.set_setting('customFanCurvesEnabled', False)
-
-        if resetCurve:
-            legion_space.set_tdp_mode("performance")
-            sleep(0.5)
-            legion_space.set_tdp_mode("custom")
-
-    async def save_fan_settings(self, fanInfo, currentGameId):
-        fanProfiles = fanInfo.get('fanProfiles', {})
-        fanPerGameProfilesEnabled = fanInfo.get('fanPerGameProfilesEnabled', False)
-        customFanCurvesEnabled = fanInfo.get('customFanCurvesEnabled', False)
-
-        settings.set_setting('fanPerGameProfilesEnabled', fanPerGameProfilesEnabled)
-        settings.set_setting('customFanCurvesEnabled', customFanCurvesEnabled)
-        settings.set_all_fan_profiles(fanProfiles)
-
-        try:
-            active_fan_profile = fanProfiles.get('default')
-
-            if customFanCurvesEnabled and settings.supports_custom_fan_curves():
-                if fanPerGameProfilesEnabled:
-                    fan_profile = fanProfiles.get(currentGameId)
-                    if fan_profile:
-                        active_fan_profile = fan_profile
-
-                enable_full_fan_speed = active_fan_profile.get("fullFanSpeedEnabled", False)
-                del active_fan_profile['fullFanSpeedEnabled']
-                active_fan_curve = list(active_fan_profile.values())
-
-                if not enable_full_fan_speed:
-                    legion_space.set_full_fan_speed(False)
-                    sleep(0.5)
-                    legion_space.set_active_fan_curve(active_fan_curve)
-                else:
-                    legion_space.set_full_fan_speed(True)
-            elif not customFanCurvesEnabled and settings.supports_custom_fan_curves():
-                legion_space.set_tdp_mode("performance")
-                sleep(0.5)
-                legion_space.set_tdp_mode("custom")
-
-            return True
-        except Exception as e:
-            decky_plugin.logger(f'save_fan_settings error {e}')
-            return False
-
-    # sync state in settings.json to actual controller RGB hardware
-    async def sync_rgb_settings(self, currentGameId):
-        return rgb.sync_rgb_settings(currentGameId)
 
     async def set_power_led(self, enabled):
         settings.set_setting('powerLedEnabled', enabled)
 
         legion_space.set_power_light(enabled)
-
-    async def set_charge_limit(self, enabled):
-        try:
-            settings.set_setting('chargeLimitEnabled', enabled)
-
-            legion_space.set_charge_limit(enabled)
-        except Exception as e:
-            decky_plugin.logger.error(f'error while setting charge limit {e}')
 
     async def set_als_enabled(self, enabled):
         try:

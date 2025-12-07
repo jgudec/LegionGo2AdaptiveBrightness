@@ -7,7 +7,7 @@ import os
 
 def download_latest_build():
     # ssl._create_default_https_context = ssl._create_unverified_context
-    url = "http://api.github.com/repos/aarron-lee/LegionGoRemapper/releases/latest"
+    url = "http://api.github.com/repos/aarron-lee/LegionGo2AdaptiveBrightness/releases/latest"
 
     gcontext = ssl.SSLContext()
 
@@ -18,7 +18,7 @@ def download_latest_build():
 
     decky_plugin.logger.info(download_url)
 
-    file_path = '/tmp/LegionGoRemapper.tar.gz'
+    file_path = '/tmp/LegionGo2AdaptiveBrightness.tar.gz'
 
     with urllib.request.urlopen(download_url, context=gcontext) as response, open(file_path, 'wb') as output_file:
         output_file.write(response.read())
@@ -32,7 +32,7 @@ def ota_update():
     downloaded_filepath = download_latest_build()
 
     # install downloaded files
-    cmd = f'echo {decky_plugin.DECKY_USER_HOME}/homebrew/plugins/LegionGoRemapper/ota_update.sh | HOME="{decky_plugin.DECKY_USER_HOME}" sh'
+    cmd = f'echo {decky_plugin.DECKY_USER_HOME}/homebrew/plugins/LegionGo2AdaptiveBrightness/ota_update.sh | HOME="{decky_plugin.DECKY_USER_HOME}" sh'
 
     result = subprocess.run(cmd, shell=True, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
