@@ -3,30 +3,6 @@ import { createServerApiHelpers, getServerApi, logInfo } from './utils';
 // poll rate for the sensor
 // smooth time
 
-// Brightness thresholds
-// [ALS value, brightness as percentage]
-const BRIGHTNESS_THRESHOLDS = [
-  [0, 10],
-  [25, 15],
-  [50, 20],
-  [75, 25],
-  [100, 30],
-  [125, 35],
-  [150, 40],
-  [175, 45],
-  [200, 50],
-  [225, 55],
-  [250, 60],
-  [275, 65],
-  [300, 70],
-  [325, 75],
-  [350, 80],
-  [375, 85],
-  [400, 90],
-  [425, 95],
-  [450, 100]
-];
-
 let steamRegistration: any;
 let enableAdaptiveBrightness = false;
 
@@ -49,6 +25,24 @@ export const DEFAULT_POLLING_RATE = 100;
 export const DEFAULT_SMOOTH_TIME = 500;
 export const DEFAULT_SENSITIVITY = 50;
 
+// Get the live ALS readout from the backend
+export const getLiveAls = async (): Promise<number | null> => {
+  const serverAPI = getServerApi();
+  if (!serverAPI) return null;
+  const { result } = await serverAPI.callPluginMethod("read_als", {});
+  if (typeof result === "number") return result;
+  return null;
+};
+
+// Get the brightness threshold mapping from the backend
+export const getBrightnessMap = async (): Promise<number[][] | null> => {
+  const serverAPI = getServerApi();
+  if (!serverAPI) return null;
+  const { result } = await serverAPI.callPluginMethod("get_brightness_map", {});
+  if (Array.isArray(result)) return result;
+  return null;
+};
+
 let pollingRate = DEFAULT_POLLING_RATE; // Time in milliseconds
 let smoothTime = DEFAULT_SMOOTH_TIME; // Time in milliseconds
 const stepCount = 10; // Less steps = smoother transition
@@ -67,6 +61,9 @@ const handleAls = async () => {
 
   const { readAls } = createServerApiHelpers(serverAPI);
 
+  // Get the mapping before the loop starts (and optionally re-fetch as needed)
+  let brightnessMap: number[][] = await getBrightnessMap() || [[0, 10], [1899, 100]];
+
   while (enableAdaptiveBrightness) {
     await sleep(pollingRate);
 
@@ -75,30 +72,26 @@ const handleAls = async () => {
       continue;
     }
 
-    // Keep track of the last N values
     previousAlsValues.push(alsValue);
     previousAlsValues.shift();
 
-    // Set the initial values
     if (previousAlsValues.includes(-1)) {
       continue;
     }
 
-    // Get the average of the last N values
     const averageAlsValue =
       previousAlsValues.reduce((acc, val) => acc + val, 0) /
       previousAlsValues.length;
 
-    // Find the target brightness
+    // Use the brightnessMap array here:
     let targetBrightness = currentBrightness;
-    for (let i = 0; i < BRIGHTNESS_THRESHOLDS.length; i++) {
-      if (averageAlsValue <= BRIGHTNESS_THRESHOLDS[i][0]) {
-        targetBrightness = BRIGHTNESS_THRESHOLDS[i][1];
+    for (let i = 0; i < brightnessMap.length; i++) {
+      if (averageAlsValue <= brightnessMap[i][0]) {
+        targetBrightness = brightnessMap[i][1];
         break;
       }
-
-      if (i === BRIGHTNESS_THRESHOLDS.length - 1) {
-        targetBrightness = BRIGHTNESS_THRESHOLDS[i][1];
+      if (i === brightnessMap.length - 1) {
+        targetBrightness = brightnessMap[i][1];
       }
     }
 

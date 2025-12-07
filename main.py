@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 
 # The decky plugin module is located at decky-loader/plugin
@@ -18,7 +19,7 @@ import controller_settings as settings
 from time import sleep
 
 try:
-    LOG_LOCATION = f"/tmp/legionGoRemapper.log"
+    LOG_LOCATION = f"/tmp/LegionGo2AdaptiveBrightness.log"
     logging.basicConfig(
         level = logging.INFO,
         filename = LOG_LOCATION,
@@ -27,6 +28,23 @@ try:
         force = True)
 except Exception as e:
     logging.error(f"exception|{e}")
+
+PLUGIN_ROOT = os.path.dirname(__file__)
+BRIGHTNESS_MAP_FILE = os.path.join(PLUGIN_ROOT, "brightness_thresholds.json")
+
+def load_brightness_thresholds():
+    try:
+        with open(BRIGHTNESS_MAP_FILE, "r") as f:
+            thresholds = json.load(f)
+            if isinstance(thresholds, list):
+                return thresholds
+    except Exception as e:
+        print(f"[AdaptiveBrightness] Error loading mapping: {e}")
+    return [[0, 10], [1899, 100]]  # fallback
+
+# Load once at startup
+BRIGHTNESS_THRESHOLDS = load_brightness_thresholds()
+
 
 class Plugin:
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
@@ -50,6 +68,10 @@ class Plugin:
             decky_plugin.logger.error(e)
 
         return results
+
+    async def get_brightness_map(self):
+        # If you prefer, just return BRIGHTNESS_THRESHOLDS (so backend reload required when user edits file)
+        return BRIGHTNESS_THRESHOLDS
 
     async def find_als(self):
         return ambient_light_sensor.find_als()

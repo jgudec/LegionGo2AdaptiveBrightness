@@ -1,10 +1,10 @@
 {
-  "name": "LegionGoRemapper",
-  "author": "Aarron Lee",
+  "name": "LegionGo2AdaptiveBrightness",
+  "author": "Jeik",
   "flags": ["root"],
   "publish": {
     "tags": ["root"],
-    "description": "plugin for Legion Go Buttons, RGB, etc",
+    "description": "A plugin for enabling and controlling adaptive brightness",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }

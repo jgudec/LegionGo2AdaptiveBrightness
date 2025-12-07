@@ -2,6 +2,7 @@ import {
   PanelSection,
   PanelSectionRow,
   SliderField,
+  TextField,
   ToggleField
 } from 'decky-frontend-lib';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,6 +18,10 @@ import {
   sensitivityInfo,
   smoothTimeInfo
 } from '../../backend/alsListener';
+import { useEffect, useState } from 'react';
+import { getLiveAls, getBrightnessMap } from '../../backend/alsListener';
+
+
 
 // let currentBrightness = 40;
 
@@ -74,18 +79,39 @@ export default function () {
   const [minSmoothTime, maxSmoothTime] = smoothTimeInfo.range;
   const [minSensitivity, maxSensitivity] = sensitivityInfo.range;
 
+  const [als, setAls] = useState<number | null>(null);
+  // Poll live ALS value
+  useEffect(() => {
+    let mounted = true;
+    const poll = async () => {
+      const val = await getLiveAls();
+      if (mounted) setAls(val);
+    };
+    poll();
+    const interval = setInterval(poll, 1000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
+
   return (
     <>
       <PanelSection title="Ambient Light Sensor">
         <PanelSectionRow>
           <ToggleField
-            label={'Enable Auto Brightness (Experimental)'}
+            label={'Ambient Brightness'}
             checked={enabledAls}
             onChange={setAlsEnabled}
           />
         </PanelSectionRow>
         {enabledAls && (
           <>
+          <PanelSectionRow>
+          <TextField
+            label="Live ALS Value"
+            value={als !== null ? als.toString() : "--"}
+            disabled
+          />
+        </PanelSectionRow>
+        
             <PanelSectionRow>
               <SliderField
                 label="Sensitivity"

@@ -1,6 +1,6 @@
 # Legion Go Remapper - Decky Plugin
 
-[![](https://img.shields.io/github/downloads/aarron-lee/LegionGoRemapper/total.svg)](https://github.com/aarron-lee/LegionGoRemapper/releases)
+[![](https://img.shields.io/github/downloads/aarron-lee/LegionGo2AdaptiveBrightness/total.svg)](https://github.com/aarron-lee/LegionGo2AdaptiveBrightness/releases)
 
 Decky Plugin that replicates some of the Legion Space remapping functionality, currently only for the original Legion Go Z1E.
 
@@ -57,7 +57,7 @@ For the **Legion Go S**, see Huesync for RGB controls: https://github.com/honjow
 Run the following in terminal, then reboot. Note that this works both for installing or updating the plugin
 
 ```
-curl -L https://github.com/aarron-lee/LegionGoRemapper/raw/main/install.sh | sh
+curl -L https://github.com/aarron-lee/LegionGo2AdaptiveBrightness/raw/main/install.sh | sh
 ```
 
 ### Manual Install
@@ -80,9 +80,9 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="17ef", MODE="0666"
 
 After saving the file, then run `sudo udevadm control --reload` in terminal.
 
-Download the latest release from the [releases page](https://github.com/aarron-lee/LegionGoRemapper/releases)
+Download the latest release from the [releases page](https://github.com/aarron-lee/LegionGo2AdaptiveBrightness/releases)
 
-Unzip the `tar.gz` file, and move the `LegionGoRemapper` folder to your `$HOME/homebrew/plugins` directory
+Unzip the `tar.gz` file, and move the `LegionGo2AdaptiveBrightness` folder to your `$HOME/homebrew/plugins` directory
 
 then run:
 
@@ -97,9 +97,9 @@ then reboot your machine.
 - Node.js v16.14+ and pnpm installed
 
 ```bash
-git clone https://github.com/aarron-lee/LegionGoRemapper.git
+git clone https://github.com/aarron-lee/LegionGo2AdaptiveBrightness.git
 
-cd LegionGoRemapper
+cd LegionGo2AdaptiveBrightness
 
 # if pnpm not already installed
 npm install -g pnpm
@@ -109,7 +109,7 @@ pnpm update decky-frontend-lib --latest
 pnpm run build
 ```
 
-Afterwards, you can place the entire `LegionGoRemapper` folder in the `~/homebrew/plugins` directly, then restart your plugin service
+Afterwards, you can place the entire `LegionGo2AdaptiveBrightness` folder in the `~/homebrew/plugins` directly, then restart your plugin service
 
 ```bash
 sudo systemctl restart plugin_loader.service
@@ -139,7 +139,7 @@ run `sudo modprobe acpi_call` in terminal, if this errors out, you need to insta
 
 If you are using HHD for your controller, it has it's own LED management that overwrites this plugin.
 
-Disable the LED management in HHD if you want to use LEDs via LegionGoRemapper instead.
+Disable the LED management in HHD if you want to use LEDs via LegionGo2AdaptiveBrightness instead.
 
 ## Can I turn off the power LED while the device is asleep?
 
@@ -156,10 +156,10 @@ If you are on the latest firmware, the plugin will update both LEDs.
 First try reinstalling or updating the plugin to the latest version, there's an update button at the bottom of the plugin. You can also re-run the installer to update:
 
 ```
-curl -L https://github.com/aarron-lee/LegionGoRemapper/raw/main/install.sh | sh
+curl -L https://github.com/aarron-lee/LegionGo2AdaptiveBrightness/raw/main/install.sh | sh
 ```
 
-If this doesn't fix your issue, next try deleting your `$HOME/homebrew/settings/LegionGoRemapper/settings.json` file, and rebooting.
+If this doesn't fix your issue, next try deleting your `$HOME/homebrew/settings/LegionGo2AdaptiveBrightness/settings.json` file, and rebooting.
 
 If neither works, please create a github issue.
 

@@ -29,7 +29,7 @@ const useTitle = (fanPerGameProfilesEnabled: boolean) => {
   return title;
 };
 
-const WARNING_KEY = 'legionGoRemapper.customfan.warning';
+const WARNING_KEY = 'LegionGo2AdaptiveBrightness.customfan.warning';
 
 const FanPanel = () => {
   const supportsFanCurves = useSupportsCustomFanCurves();
