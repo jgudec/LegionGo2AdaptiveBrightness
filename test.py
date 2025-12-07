@@ -64,43 +64,6 @@ def create_touchpad_command(enable):
     buffered_command = byte_command + bytes([0xCD] * (64 - len(byte_command)))
     return buffered_command
 
-def create_rgb_control_command(controller, mode, color, brightness, profile):
-    """
-    Create a command for RGB LED control.
-
-    :param controller: byte - The controller byte (e.g., 0x03, 0x04)
-    :param mode: byte - The LED mode (e.g., 0x01 for solid)
-    :param color: bytes - The RGB color value (e.g., b'\xFF\x00\x00' for red)
-    :param brightness: byte - The brightness value 0x00 -> 0x64
-    :param profile: byte - The profile number
-    :return: bytes - The command byte array
-    """
-    command = [
-        0x05, 0x0c,  # Report ID and Length
-        0x72,        # Command (Nibble 7 + 2)
-        0x01, controller, mode
-    ] + list(color) + [brightness, profile, 0x01]
-    return bytes(command) + bytes([0xCD] * (64 - len(command)))
-
-
-def create_rgb_on_off_command(controller, on):
-    """
-    Create a command to turn the RGB LEDs on or off.
-
-    :param controller: byte - The controller byte (e.g., 0x03 for left, 0x04 for right)
-    :param on: bool - True to turn on, False to turn off
-    :return: bytes - The command byte array
-    """
-    on_off_byte = 0x01 if on else 0x00
-    command = [
-        0x05, 0x06,  # Report ID and Length
-        0x70,        # Command (Nibble 7 + 0)
-        0x02,        # Sub-parameter
-        controller,  # Controller
-        on_off_byte, # On/Off
-        0x01         # Command end marker
-    ]
-    return bytes(command) + bytes([0xCD] * (64 - len(command)))
 
 def create_gyro_remap_command(gyro, joystick):
     """
@@ -189,36 +152,3 @@ def create_fps_remap_command(controller, profile, button, action):
 # send_command(gyro_left)
 # gyro_right = create_gyro_remap_command(0x01, 0x00)
 # send_command(gyro_right)
-
-
-def create_rgb_profile_command(controller, mode, color, brightness, speed, profile):
-    """
-    Create a command to set RGB profile settings, including the speed.
-
-    :param controller: byte - The controller byte (0x03 for left, 0x04 for right)
-    :param mode: byte - The mode of the LED (e.g., 0x01 for solid. 0x02 for blinking, )
-    :param color: bytes - The RGB color value (e.g., b'\xFF\x00\x00' for red)
-    :param brightness: byte - The brightness value 0x00-0x64
-    :param speed: byte - The speed setting for dynamic modes 0x00-0x64 (higher is slower)
-    :param profile: byte - The profile number
-    :return: bytes - The command byte array
-    """
-    command = [
-        0x05, 0x0c,  # Report ID and Length
-        0x72,        # Command (Nibble 7 + 2)
-        0x01, controller, mode
-    ] + list(color) + [brightness, speed, profile, 0x01]
-    return bytes(command) + bytes([0xCD] * (64 - len(command)))
-
-
-rgb_on_command = create_rgb_on_off_command(0x03, True)
-send_command(rgb_on_command)
-rgb_profile_command = create_rgb_profile_command(
-    controller=0x04, 
-    mode=0x03,  # Dynamic color mode
-    color=b'\x00\xFF\xFF',  # Red color
-    brightness=0x64,  # Medium brightness
-    speed=0x01,  # Medium speed
-    profile=0x01  # Profile number 1
-)
-send_command(rgb_profile_command)

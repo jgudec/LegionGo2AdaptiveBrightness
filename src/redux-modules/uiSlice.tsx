@@ -23,7 +23,6 @@ type UiStateType = {
   initialLoading: boolean;
   currentGameId: undefined | string;
   currentDisplayName: undefined | string;
-  chargeLimitEnabled?: boolean;
   alsEnabled?: boolean;
   pluginVersionNum?: string;
   alsInfo: {
@@ -54,9 +53,7 @@ export const uiSlice = createSlice({
     setInitialLoading: (state, action: PayloadAction<boolean>) => {
       state.initialLoading = action.payload;
     },
-    setChargeLimit(state, action: PayloadAction<boolean>) {
-      state.chargeLimitEnabled = action.payload;
-    },
+
     setAlsEnabled(state, action: PayloadAction<boolean>) {
       state.alsEnabled = action.payload;
     },
@@ -78,9 +75,6 @@ export const uiSlice = createSlice({
       if (action) state.initialLoading = false;
       if (action.payload?.pluginVersionNum) {
         state.pluginVersionNum = `${action.payload.pluginVersionNum}`;
-      }
-      if (action.payload?.chargeLimitEnabled) {
-        state.chargeLimitEnabled = Boolean(action.payload?.chargeLimitEnabled);
       }
       if (action.payload?.alsEnabled) {
         state.alsEnabled = Boolean(action.payload?.alsEnabled);
@@ -114,9 +108,6 @@ export const selectCurrentGameId = (state: RootState) =>
 export const selectCurrentGameDisplayName = (state: RootState) =>
   state.ui?.currentDisplayName || 'default';
 
-export const selectChargeLimitEnabled = (state: RootState) =>
-  Boolean(state.ui?.chargeLimitEnabled);
-
 export const selectAlsEnabled = (state: RootState) =>
   Boolean(state.ui?.alsEnabled);
 
@@ -135,7 +126,7 @@ export const uiSliceMiddleware =
     const result = next(action);
 
     if (serverApi) {
-      const { setChargeLimit, setAlsEnabled, saveSettings } =
+      const { setAlsEnabled, saveSettings } =
         createServerApiHelpers(serverApi);
 
       if (type === setInitialState.type) {
@@ -157,9 +148,6 @@ export const uiSliceMiddleware =
         saveSettings({ alsInfo });
       }
 
-      if (type === uiSlice.actions.setChargeLimit.type) {
-        setChargeLimit(action.payload);
-      }
       if (type === uiSlice.actions.setAlsEnabled.type) {
         const enabled = action.payload;
         setAlsEnabled(enabled);
