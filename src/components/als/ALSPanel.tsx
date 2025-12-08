@@ -4,9 +4,7 @@ import {
   SliderField,
   TextField,
   ToggleField,
-  ButtonItem,
-  Dropdown
-} from 'decky-frontend-lib';
+  ButtonItem} from 'decky-frontend-lib';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   selectAlsEnabled,

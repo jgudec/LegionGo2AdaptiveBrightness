@@ -1,5 +1,4 @@
 import { ServerAPI, Router } from 'decky-frontend-lib';
-import { ControllerType, RemapActions, RemappableButtons } from './constants';
 
 export enum ServerAPIMethods {
   RGB_ON = 'rgb_on',
@@ -18,48 +17,11 @@ const readAls = (serverApi: ServerAPI) => async () => {
   return Number(result);
 };
 
-const createRgbOn =
-  (serverAPI: ServerAPI) => async (controller: ControllerType) => {
-    await serverAPI.callPluginMethod(ServerAPIMethods.RGB_ON, {
-      controller
-    });
-  };
-
-const createRgbOff =
-  (serverAPI: ServerAPI) => async (controller: ControllerType) => {
-    await serverAPI.callPluginMethod(ServerAPIMethods.RGB_OFF, {
-      controller
-    });
-  };
-
-const createRemapButtons =
-  (serverAPI: ServerAPI) =>
-  async (button: RemappableButtons, action: RemapActions) => {
-    await serverAPI.callPluginMethod(ServerAPIMethods.REMAP_BUTTON, {
-      button,
-      action
-    });
-  };
-
 const createLogInfo = (serverAPI: ServerAPI) => async (info: any) => {
   await serverAPI.callPluginMethod(ServerAPIMethods.LOG_INFO, {
     info: JSON.stringify(info)
   });
 };
-
-const createSetPowerLed =
-  (serverAPI: ServerAPI) => async (enabled: boolean) => {
-    await serverAPI.callPluginMethod(ServerAPIMethods.SET_POWER_LED, {
-      enabled
-    });
-  };
-
-const createSetChargeLimit =
-  (serverAPI: ServerAPI) => async (enabled: boolean) => {
-    await serverAPI.callPluginMethod(ServerAPIMethods.SET_CHARGE_LIMIT, {
-      enabled
-    });
-  };
 
 const createSetAlsEnabled =
   (serverAPI: ServerAPI) => async (enabled: boolean) => {
@@ -97,13 +59,8 @@ export const extractCurrentGameId = () =>
 
 export const createServerApiHelpers = (serverAPI: ServerAPI) => {
   return {
-    rgbOn: createRgbOn(serverAPI),
-    rgbOff: createRgbOff(serverAPI),
-    remapButton: createRemapButtons(serverAPI),
     logInfo: createLogInfo(serverAPI),
     getSettings: createGetSettings(serverAPI),
-    setPowerLed: createSetPowerLed(serverAPI),
-    setChargeLimit: createSetChargeLimit(serverAPI),
     readAls: readAls(serverAPI),
     setAlsEnabled: createSetAlsEnabled(serverAPI),
     saveSettings: createSaveSettings(serverAPI)

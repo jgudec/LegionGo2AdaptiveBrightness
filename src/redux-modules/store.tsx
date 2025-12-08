@@ -1,26 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { rgbSlice, saveRgbSettingsMiddleware } from './rgbSlice';
 import { uiSlice, uiSliceMiddleware } from './uiSlice';
-import {
-  controllerSlice,
-  saveControllerSettingsMiddleware
-} from './controllerSlice';
-import { fanSlice, saveFanSettingsMiddleware } from './fanSlice';
+
+import { fanSlice,  } from './fanSlice';
 // import { logger } from './logger';
 
 export const store = configureStore({
   reducer: {
-    ui: uiSlice.reducer,
-    rgb: rgbSlice.reducer,
-    fan: fanSlice.reducer,
-    controller: controllerSlice.reducer
+    ui: uiSlice.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
-      uiSliceMiddleware,
-      saveRgbSettingsMiddleware,
-      saveControllerSettingsMiddleware,
-      saveFanSettingsMiddleware
+      uiSliceMiddleware
       // logger
     ])
 });
