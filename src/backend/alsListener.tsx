@@ -35,7 +35,7 @@ export const getLiveAls = async (): Promise<number | null> => {
 };
 
 // Get the brightness threshold mapping from the backend
-export const getBrightnessMap = async (): Promise<number[][] | null> => {
+export const getBrightnessMap = async (): Promise<[number, number][] | null> => {
   const serverAPI = getServerApi();
   if (!serverAPI) return null;
   const { result } = await serverAPI.callPluginMethod("get_brightness_map", {});
@@ -51,21 +51,21 @@ let previousAlsValues = Array(DEFAULT_SENSITIVITY).fill(-1); // Increase length 
 let currentBrightness = 50;
 
 const handleAls = async () => {
-  const sleep = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
-  const serverAPI = getServerApi();
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    const serverAPI = getServerApi();
 
-  if (!serverAPI) {
-    return;
-  }
+    if (!serverAPI) {
+      return;
+    }
 
-  const { readAls } = createServerApiHelpers(serverAPI);
+    const { readAls } = createServerApiHelpers(serverAPI);
 
-  // Get the mapping before the loop starts (and optionally re-fetch as needed)
-  let brightnessMap: number[][] = await getBrightnessMap() || [[0, 10], [1899, 100]];
+    while (enableAdaptiveBrightness) {
+      await sleep(pollingRate);
 
-  while (enableAdaptiveBrightness) {
-    await sleep(pollingRate);
+    // 🚨 Always use latest mapping!
+    let brightnessMap: number[][] = await getBrightnessMap() || [[0, 10], [1899, 100]];
 
     const alsValue = await readAls();
     if (typeof alsValue !== 'number') {

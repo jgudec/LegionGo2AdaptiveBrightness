@@ -45,7 +45,6 @@ def load_brightness_thresholds():
 # Load once at startup
 BRIGHTNESS_THRESHOLDS = load_brightness_thresholds()
 
-
 class Plugin:
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
@@ -70,8 +69,20 @@ class Plugin:
         return results
 
     async def get_brightness_map(self):
-        # If you prefer, just return BRIGHTNESS_THRESHOLDS (so backend reload required when user edits file)
-        return BRIGHTNESS_THRESHOLDS
+        return load_brightness_thresholds()
+
+    async def save_brightness_map(self, new_map):
+        # Validate the new_map!
+        try:
+            # Ensure it's a list of [int, int] pairs
+            parsed = [[int(k), int(v)] for k, v in new_map]
+            with open(BRIGHTNESS_MAP_FILE, "w") as f:
+                json.dump(parsed, f, indent=2)
+            print(f"Saved successfully!")
+            return {"success": True}
+        except Exception as e:
+            print(f"Error saving brightness map: {e}")
+            return {"success": False, "error": str(e)}
 
     async def find_als(self):
         return ambient_light_sensor.find_als()
