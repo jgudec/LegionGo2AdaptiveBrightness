@@ -1,13 +1,8 @@
 import { ServerAPI, Router } from 'decky-frontend-lib';
 
 export enum ServerAPIMethods {
-  RGB_ON = 'rgb_on',
-  RGB_OFF = 'rgb_off',
-  REMAP_BUTTON = 'remap_button',
   LOG_INFO = 'log_info',
   GET_SETTINGS = 'get_settings',
-  SET_POWER_LED = 'set_power_led',
-  SET_CHARGE_LIMIT = 'set_charge_limit',
   SET_ALS_ENABLED = 'set_als_enabled',
   SAVE_SETTINGS = 'save_settings'
 }

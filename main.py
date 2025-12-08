@@ -8,14 +8,8 @@ import logging
 
 import decky_plugin
 import ambient_light_sensor
-import legion_configurator
-import legion_space
-import controller_enums
-import rgb
-import controllers
 import file_timeout
 import plugin_update
-import controller_settings as settings
 from time import sleep
 
 try:
@@ -53,16 +47,9 @@ class Plugin:
     async def get_settings(self):
         results = settings.get_settings()
 
-        if results.get("chargeLimitEnabled", False):
-            legion_space.set_charge_limit(True)
-
         try:
             results['pluginVersionNum'] = f'{decky_plugin.DECKY_PLUGIN_VERSION}'
 
-            if settings.supports_custom_fan_curves():
-                results['supportsCustomFanCurves'] = True
-            else:
-                results['supportsCustomFanCurves'] = False
         except Exception as e:
             decky_plugin.logger.error(e)
 

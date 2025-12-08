@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { uiSlice, uiSliceMiddleware } from './uiSlice';
 
-import { fanSlice,  } from './fanSlice';
 // import { logger } from './logger';
 
 export const store = configureStore({
