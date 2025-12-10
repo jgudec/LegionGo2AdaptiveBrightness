@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/github/downloads/jgudec/LegionGo2AdaptiveBrightness/total.svg)](https://github.com/jgudec/LegionGo2AdaptiveBrightness/releases)
 
-A Decky plugin based on LegionGORemapper, specifically a stripped-down version of it with the sole purpose of enabling Adaptive Brightness for the Lenovo Legion GO 2.
+A Decky plugin based on LegionGORemapper, specifically a stripped-down version of it with the sole purpose of enabling Adaptive Brightness for the Lenovo Legion GO 2 (and manual brightness control for the likes of CachyOS and SteamOS).
 
 ### Why stripped down? 
 Because e.g. Bazzite, with its integrated Handheld Daemon, already has fan curve/RGB/mapping control built into it, and LeggionGoRemapper's implementations were only clashing with HDD's ones...and I only cared about the Adaptive Brightness bit...

@@ -15,6 +15,8 @@ import {
   uiSlice
 } from '../../redux-modules/uiSlice';
 import {
+  disableAlsListener,
+  enableAlsListener,
   pollInfo,
   sensitivityInfo,
   smoothTimeInfo
@@ -168,12 +170,77 @@ export default function ALSPanel() {
     }
   };
 
+  const [currentBrightness, setCurrentBrightness] = useState<number>(50);
+
+  useEffect(() => {
+    const unregister = window.SteamClient?.System?.Display?.RegisterForBrightnessChanges?.(
+      (data: { flBrightness: number }) => {
+        setCurrentBrightness(Math.round(data.flBrightness * 100));
+      }
+    );
+
+    (async () => {
+      let systemValue = 0.5;
+      if (window.SteamClient?.System?.Display?.GetBrightness) {
+        systemValue = window.SteamClient.System.Display.GetBrightness();
+      }
+      setCurrentBrightness(Math.round(systemValue * 100));
+    })();
+
+    return () => {
+      if (typeof unregister === "function") unregister();
+    };
+  }, []);
+
+  const handleManualBrightnessChange = (val: number) => {
+    window.SteamClient.System.Display.SetBrightness(val / 100);
+  };
+
+  useEffect(() => {
+    if (enabledAls) {
+      enableAlsListener();
+    } else {
+      disableAlsListener();
+    }
+    return () => {
+      disableAlsListener();
+    };
+  }, [enabledAls]);
+
+  const [osId, setOsId] = useState<string>("unknown");
+  useEffect(() => {
+    getOsId().then(setOsId);
+  }, []);
+
+  const getOsId = async (): Promise<string> => {
+    const serverAPI = getServerApi();
+    if (!serverAPI) return "unknown";
+    const { result } = await serverAPI.callPluginMethod('get_os_id', {});
+    return typeof result === "string" ? result : "unknown";
+  };
+
+  const showSlider = osId === "cachyos" || osId === "steamos";
+
   return (
     <>
-      <PanelSection title="Ambient Light Sensor">
+      <PanelSection>
+        {showSlider && (
+        <PanelSectionRow>
+          <SliderField
+            label="Brightness"
+            min={0}
+            max={100}
+            step={1}
+            value={currentBrightness}
+            onChange={handleManualBrightnessChange}
+            disabled={enabledAls}
+            showValue
+          />
+        </PanelSectionRow>
+        )}
         <PanelSectionRow>
           <ToggleField
-            label={'Enabled'}
+            label={'Ambient Brightness'}
             checked={enabledAls}
             onChange={setAlsEnabled}
           />

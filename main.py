@@ -179,3 +179,12 @@ class Plugin:
 
     async def log_info(self, info):
         logging.info(info)
+
+    async def get_os_id(self):
+        try:
+            with open("/etc/os-release", "r") as f:
+                for line in f:
+                    if line.startswith("ID="):
+                        return line.strip().split("=")[1].strip('"')
+        except Exception as e:
+            return "unknown"

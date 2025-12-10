@@ -116,10 +116,6 @@ const handleAls = async () => {
         Math.max(0, localCurrentBrightness)
       );
 
-      logInfo(
-        `Setting brightness to ${localCurrentBrightness}, target: ${targetBrightness}, brightnessPerStep: ${brightnessPerStep}`
-      );
-
       window.SteamClient.System.Display.SetBrightness(
         localCurrentBrightness / 100
       );
@@ -143,6 +139,17 @@ export const enableAlsListener = () => {
           currentBrightness = data.flBrightness * 100;
         }
       );
+};
+
+export const disableAlsListener = () => {
+  enableAdaptiveBrightness = false;
+  previousAlsValues.fill(-1);
+
+  // Unregister the callback
+  if (steamRegistration && typeof steamRegistration === "function") {
+    steamRegistration();
+    steamRegistration = null;
+  }
 };
 
 export const setPollRate = (newRate: number) => {
