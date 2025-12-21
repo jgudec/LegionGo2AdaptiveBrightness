@@ -8,12 +8,7 @@ import logging
 
 import decky_plugin
 import ambient_light_sensor
-import legion_configurator
-import legion_space
-import controller_enums
-import controllers
 import file_timeout
-import plugin_update
 import controller_settings as settings
 from time import sleep
 
@@ -82,75 +77,12 @@ class Plugin:
         # decky_plugin.logger.info('read als called')
         return ambient_light_sensor.read_als()
 
-    
-
-    async def save_controller_settings(self, controller, currentGameId):
-        controllerProfiles = controller.get('controllerProfiles')
-        controllerPerGameProfilesEnabled = controller.get('perGameProfilesEnabled') or False
-        controllerRemappingEnabled  = controller.get('controllerRemappingEnabled') or False
-
-        settings.set_setting('controllerPerGameProfilesEnabled', controllerPerGameProfilesEnabled)
-        settings.set_setting('controllerRemappingEnabled', controllerRemappingEnabled)
-        result = settings.set_all_controller_profiles(controllerProfiles)
-
-        if controllerRemappingEnabled:
-            # double-sync just in case the first one doesn't register
-            for _ in range(2):
-                # sync settings.json to actual controller hardware
-                if currentGameId:
-                    controllers.sync_controller_profile_settings(currentGameId)
-                    # sync touchpad
-                    controllers.sync_touchpad(currentGameId)
-                    # sync gyros
-                    controllers.sync_gyros(currentGameId)
-        return result
-
-
-    async def set_power_led(self, enabled):
-        settings.set_setting('powerLedEnabled', enabled)
-
-        legion_space.set_power_light(enabled)
 
     async def set_als_enabled(self, enabled):
         try:
             settings.set_setting('alsEnabled', enabled)
         except Exception as e:
             decky_plugin.logger.error(f'error while setting als {e}')
-
-    async def save_settings(self, new_settings):
-        try:
-            settings.merge_settings(new_settings)
-        except Exception as e:
-            decky_plugin.logger.error(f'error save_settings {e}')
-
-    async def remap_button(self, button: str, action: str):
-        decky_plugin.logger.info(f"remap_button {button} {action}")
-        controller_code = None
-        if button in ['Y3', 'M2', 'M3']:
-            controller_code = controller_enums.Controller['RIGHT'].value
-        elif button in ['Y1', 'Y2']:
-            controller_code = controller_enums.Controller['LEFT'].value
-        if not controller_code:
-            return
-        btn_code = controller_enums.RemappableButtons[button].value
-        action_code = controller_enums.RemapActions[action].value
-        remap_command = legion_configurator.create_button_remap_command(controller_code, btn_code, action_code)
-
-        legion_configurator.send_command(remap_command)
-
-    async def set_touchpad(self, enable: bool):
-        t_toggle = legion_configurator.create_touchpad_command(enable)
-        decky_plugin.logger.info(t_toggle)
-
-        legion_configurator.send_command(t_toggle)
-
-    async def ota_update(self):
-        # trigger ota update
-        try:
-            with file_timeout.time_limit(15):
-                plugin_update.ota_update()
-        except Exception as e:
-            logging.error(e)
 
     # Function called first during the unload process, utilize this to handle your plugin being removed
     async def _unload(self):

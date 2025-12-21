@@ -10,7 +10,6 @@ import { store } from './redux-modules/store';
 import { getInitialLoading } from './redux-modules/uiSlice';
 import { setInitialState } from './redux-modules/extraActions';
 import { Provider, useSelector } from 'react-redux';
-import { currentGameIdListener } from './backend/currentGameIdListener';
 import AlsPanel from './components/als/ALSPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import { FaSun } from "react-icons/fa";
@@ -49,14 +48,10 @@ export default definePlugin((serverApi: ServerAPI) => {
     }
   });
 
-  const clearListener = currentGameIdListener();
 
   return {
     title: <div className={staticClasses.Title}>Adaptive Brightness</div>,
     content: <AppContainer serverAPI={serverApi} />,
-    icon: <FaSun/>,
-    onDismount() {
-      clearListener();
-    }
+    icon: <FaSun/>
   };
 });
